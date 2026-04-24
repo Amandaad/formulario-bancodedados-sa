@@ -1,5 +1,6 @@
 ﻿<?php
 require_once __DIR__ . '/seguranca.php';
+auth_exigir_login();
 
 $mensagem = '';
 $erro = '';
@@ -92,6 +93,27 @@ try {
         h1 {
             margin: 0 0 18px;
             color: #222;
+        }
+
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .topo a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .topo a:hover {
+            text-decoration: underline;
         }
 
         .acoes {
@@ -257,6 +279,11 @@ try {
 <body>
     <div class="container">
         <h1>Contatos Salvos</h1>
+
+        <div class="topo">
+            <span>Usuario logado: <?= e(auth_nome_usuario()) ?></span>
+            <a href="logout.php">Sair</a>
+        </div>
 
         <div class="acoes">
             <a href="index.php">Voltar para o formulario</a>

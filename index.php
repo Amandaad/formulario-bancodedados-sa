@@ -1,5 +1,6 @@
 ﻿<?php
 require_once __DIR__ . '/seguranca.php';
+auth_exigir_login();
 
 $mensagem = '';
 $erro = '';
@@ -159,6 +160,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="container">
         <h1>Formulario</h1>
+
+        <div class="link-lista">
+            Usuario logado: <?= e(auth_nome_usuario()) ?> |
+            <a href="logout.php">Sair</a>
+        </div>
 
         <form method="POST">
             <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
