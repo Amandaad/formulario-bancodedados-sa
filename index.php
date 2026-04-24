@@ -1,4 +1,6 @@
 ﻿<?php
+require_once __DIR__ . '/seguranca.php';
+
 $mensagem = '';
 $erro = '';
 
@@ -8,12 +10,17 @@ $usuario = 'root';
 $senha = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = $_POST['csrf_token'] ?? '';
     $nome = trim($_POST['nome'] ?? '');
     $telefone = trim($_POST['telefone'] ?? '');
     $email = trim($_POST['email'] ?? '');
 
-    if ($nome === '' || $telefone === '' || $email === '') {
+    if (!csrf_valido($token)) {
+        $erro = 'Sessao invalida. Recarregue a pagina e tente novamente.';
+    } elseif ($nome === '' || $telefone === '' || $email === '') {
         $erro = 'Preencha todos os campos.';
+    } elseif (!telefone_valido($telefone)) {
+        $erro = 'Digite um telefone valido (10 ou 11 numeros).';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $erro = 'Digite um email valido.';
     } else {
@@ -154,24 +161,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Formulario</h1>
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+
             <label for="nome">Nome</label>
-            <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? '') ?>">
+            <input type="text" id="nome" name="nome" maxlength="120" value="<?= e($_POST['nome'] ?? '') ?>">
 
             <label for="telefone">Telefone</label>
-            <input type="text" id="telefone" name="telefone" value="<?= htmlspecialchars($_POST['telefone'] ?? '') ?>">
+            <input type="text" id="telefone" name="telefone" inputmode="numeric" maxlength="15" value="<?= e($_POST['telefone'] ?? '') ?>">
 
             <label for="email">Email</label>
-            <input type="email" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+            <input type="email" id="email" name="email" maxlength="180" value="<?= e($_POST['email'] ?? '') ?>">
 
             <button type="submit">Enviar</button>
         </form>
 
         <?php if ($mensagem): ?>
-            <div class="mensagem sucesso"><?= $mensagem ?></div>
+            <div class="mensagem sucesso"><?= e($mensagem) ?></div>
         <?php endif; ?>
 
         <?php if ($erro): ?>
-            <div class="mensagem erro"><?= $erro ?></div>
+            <div class="mensagem erro"><?= e($erro) ?></div>
         <?php endif; ?>
 
         <div class="link-lista">

@@ -1,8 +1,10 @@
 ﻿<?php
+require_once __DIR__ . '/seguranca.php';
+
 $mensagem = '';
 $erro = '';
 $contatos = [];
-$busca = trim($_REQUEST['busca'] ?? '');
+$busca = trim((string) ($_GET['busca'] ?? $_POST['busca'] ?? ''));
 
 $host = '127.0.0.1';
 $banco = 'formulario';
@@ -28,9 +30,12 @@ try {
     );
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $token = $_POST['csrf_token'] ?? '';
         $idExcluir = (int) ($_POST['id_excluir'] ?? 0);
 
-        if ($idExcluir > 0) {
+        if (!csrf_valido($token)) {
+            $erro = 'Sessao invalida. Recarregue a pagina e tente novamente.';
+        } elseif ($idExcluir > 0) {
             $delete = $pdo->prepare('DELETE FROM contatos WHERE id = :id');
             $delete->execute([':id' => $idExcluir]);
 
@@ -262,7 +267,7 @@ try {
                 type="text"
                 name="busca"
                 placeholder="Buscar por nome ou email"
-                value="<?= htmlspecialchars($busca) ?>"
+                value="<?= e($busca) ?>"
             >
             <button type="submit" class="btn-buscar">Buscar</button>
             <?php if ($busca !== ''): ?>
@@ -271,11 +276,11 @@ try {
         </form>
 
         <?php if ($mensagem): ?>
-            <div class="sucesso"><?= $mensagem ?></div>
+            <div class="sucesso"><?= e($mensagem) ?></div>
         <?php endif; ?>
 
         <?php if ($erro): ?>
-            <div class="erro"><?= $erro ?></div>
+            <div class="erro"><?= e($erro) ?></div>
         <?php elseif (!$contatos): ?>
             <div class="vazio">Nenhum contato cadastrado ainda.</div>
         <?php else: ?>
@@ -294,16 +299,17 @@ try {
                     <?php foreach ($contatos as $contato): ?>
                         <tr>
                             <td><?= (int) $contato['id'] ?></td>
-                            <td><?= htmlspecialchars($contato['nome']) ?></td>
-                            <td><?= htmlspecialchars($contato['telefone']) ?></td>
-                            <td><?= htmlspecialchars($contato['email']) ?></td>
-                            <td><?= htmlspecialchars($contato['criado_em']) ?></td>
+                            <td><?= e($contato['nome']) ?></td>
+                            <td><?= e($contato['telefone']) ?></td>
+                            <td><?= e($contato['email']) ?></td>
+                            <td><?= e($contato['criado_em']) ?></td>
                             <td class="acoes-linha">
                                 <div class="grupo-acoes">
                                     <a class="btn-editar" href="editar.php?id=<?= (int) $contato['id'] ?>&busca=<?= urlencode($busca) ?>">Editar</a>
                                     <form class="form-inline" method="POST" onsubmit="return confirm('Deseja excluir este contato?');">
+                                        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
                                         <input type="hidden" name="id_excluir" value="<?= (int) $contato['id'] ?>">
-                                        <input type="hidden" name="busca" value="<?= htmlspecialchars($busca) ?>">
+                                        <input type="hidden" name="busca" value="<?= e($busca) ?>">
                                         <button type="submit" class="btn-excluir">Excluir</button>
                                     </form>
                                 </div>

@@ -1,4 +1,6 @@
 ﻿<?php
+require_once __DIR__ . '/seguranca.php';
+
 $mensagem = '';
 $erro = '';
 $contato = null;
@@ -9,7 +11,7 @@ $usuario = 'root';
 $senha = '';
 
 $id = (int) ($_GET['id'] ?? 0);
-$busca = trim($_GET['busca'] ?? '');
+$busca = trim((string) ($_GET['busca'] ?? ''));
 $linkContatos = 'contatos.php' . ($busca !== '' ? '?busca=' . urlencode($busca) : '');
 
 if ($id <= 0) {
@@ -35,12 +37,17 @@ try {
     );
 
     if (!$erro && $_SERVER['REQUEST_METHOD'] === 'POST') {
+        $token = $_POST['csrf_token'] ?? '';
         $nome = trim($_POST['nome'] ?? '');
         $telefone = trim($_POST['telefone'] ?? '');
         $email = trim($_POST['email'] ?? '');
 
-        if ($nome === '' || $telefone === '' || $email === '') {
+        if (!csrf_valido($token)) {
+            $erro = 'Sessao invalida. Recarregue a pagina e tente novamente.';
+        } elseif ($nome === '' || $telefone === '' || $email === '') {
             $erro = 'Preencha todos os campos.';
+        } elseif (!telefone_valido($telefone)) {
+            $erro = 'Digite um telefone valido (10 ou 11 numeros).';
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $erro = 'Digite um email valido.';
         } else {
@@ -180,28 +187,30 @@ try {
         <h1>Editar Contato</h1>
 
         <?php if ($mensagem): ?>
-            <div class="mensagem"><?= $mensagem ?></div>
+            <div class="mensagem"><?= e($mensagem) ?></div>
         <?php endif; ?>
 
         <?php if ($erro): ?>
-            <div class="erro"><?= $erro ?></div>
+            <div class="erro"><?= e($erro) ?></div>
         <?php elseif ($contato): ?>
             <form method="POST">
+                <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+
                 <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" value="<?= htmlspecialchars($_POST['nome'] ?? $contato['nome']) ?>">
+                <input type="text" id="nome" name="nome" maxlength="120" value="<?= e($_POST['nome'] ?? $contato['nome']) ?>">
 
                 <label for="telefone">Telefone</label>
-                <input type="text" id="telefone" name="telefone" value="<?= htmlspecialchars($_POST['telefone'] ?? $contato['telefone']) ?>">
+                <input type="text" id="telefone" name="telefone" inputmode="numeric" maxlength="15" value="<?= e($_POST['telefone'] ?? $contato['telefone']) ?>">
 
                 <label for="email">Email</label>
-                <input type="email" id="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? $contato['email']) ?>">
+                <input type="email" id="email" name="email" maxlength="180" value="<?= e($_POST['email'] ?? $contato['email']) ?>">
 
                 <button type="submit">Salvar alteracoes</button>
             </form>
         <?php endif; ?>
 
         <div class="links">
-            <a href="<?= $linkContatos ?>">Voltar para contatos</a>
+            <a href="<?= e($linkContatos) ?>">Voltar para contatos</a>
             <a href="index.php">Ir para formulario</a>
         </div>
     </div>
