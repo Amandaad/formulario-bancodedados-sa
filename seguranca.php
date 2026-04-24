@@ -1,5 +1,78 @@
 ﻿<?php
+
+function env_carregar_arquivo(string $arquivo): void
+{
+    if (!is_file($arquivo) || !is_readable($arquivo)) {
+        return;
+    }
+
+    $linhas = file($arquivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if (!is_array($linhas)) {
+        return;
+    }
+
+    foreach ($linhas as $linha) {
+        $linha = trim($linha);
+        $linha = preg_replace('/^\xEF\xBB\xBF/', '', $linha) ?? $linha;
+
+        if ($linha === '' || str_starts_with($linha, '#')) {
+            continue;
+        }
+
+        $partes = explode('=', $linha, 2);
+        if (count($partes) !== 2) {
+            continue;
+        }
+
+        $chave = trim($partes[0]);
+        $valor = trim($partes[1]);
+
+        if ($chave === '') {
+            continue;
+        }
+
+        $tamanho = strlen($valor);
+        if ($tamanho >= 2) {
+            $primeiro = $valor[0];
+            $ultimo = $valor[$tamanho - 1];
+            if (($primeiro === '"' && $ultimo === '"') || ($primeiro === "'" && $ultimo === "'")) {
+                $valor = substr($valor, 1, -1);
+            }
+        }
+
+        if (getenv($chave) === false) {
+            putenv($chave . '=' . $valor);
+            $_ENV[$chave] = $valor;
+            $_SERVER[$chave] = $valor;
+        }
+    }
+}
+
+function env_valor(string $chave, string $padrao = ''): string
+{
+    $valor = getenv($chave);
+    if (!is_string($valor) || $valor === '') {
+        return $padrao;
+    }
+
+    return $valor;
+}
+
+env_carregar_arquivo(__DIR__ . '/.env');
+
+$secureCookie = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || ((int) ($_SERVER['SERVER_PORT'] ?? 0) === 443);
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    ini_set('session.use_strict_mode', '1');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => $secureCookie,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
@@ -47,19 +120,17 @@ function telefone_valido(string $telefone): bool
 
 function auth_usuario_padrao(): string
 {
-    $usuario = getenv('APP_ADMIN_USER');
-    return is_string($usuario) && $usuario !== '' ? $usuario : 'admin';
+    return env_valor('APP_ADMIN_USER', '');
 }
 
 function auth_hash_senha_padrao(): string
 {
-    $hash = getenv('APP_ADMIN_PASS_HASH');
-    if (is_string($hash) && $hash !== '') {
-        return $hash;
-    }
+    return env_valor('APP_ADMIN_PASS_HASH', '');
+}
 
-    // Default password: admin123
-    return '$2y$10$WpgNfPig2.YyXOsmnpSJmODwurpTGcK7IgQiv8S39g.LPY71FXieO';
+function auth_configurada(): bool
+{
+    return auth_usuario_padrao() !== '' && auth_hash_senha_padrao() !== '';
 }
 
 function auth_esta_logado(): bool
@@ -105,7 +176,7 @@ function auth_resetar_falhas(): void
 
 function auth_realizar_login(string $usuario, string $senha): bool
 {
-    if (auth_bloqueado()) {
+    if (!auth_configurada() || auth_bloqueado()) {
         return false;
     }
 
@@ -180,3 +251,4 @@ function auth_exigir_login(): void
     header('Location: login.php?redirect=' . urlencode(auth_destino_seguro($destino)));
     exit;
 }
+

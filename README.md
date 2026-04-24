@@ -52,11 +52,18 @@ Estrutura principal da tabela:
 
 1. Coloque a pasta do projeto em:
    - `C:\xampp\htdocs\formulario`
-2. Abra o XAMPP Control Panel.
-3. Inicie:
+2. Crie seu arquivo de ambiente:
+   - copie `.env.example` para `.env`
+   - configure:
+     - `APP_ADMIN_USER`
+     - `APP_ADMIN_PASS_HASH`
+3. Para gerar hash da senha:
+   - `C:\xampp\php\php.exe -r "echo password_hash('SUA_SENHA_AQUI', PASSWORD_DEFAULT), PHP_EOL;"`
+4. Abra o XAMPP Control Panel.
+5. Inicie:
    - `Apache`
    - `MySQL`
-4. Acesse no navegador:
+6. Acesse no navegador:
    - `http://localhost/formulario/`
 
 ## Fluxo de Uso
@@ -64,7 +71,7 @@ Estrutura principal da tabela:
 1. Abrir `index.php` e cadastrar contato.
 2. Clicar em `Ver contatos salvos`.
 3. Fazer login na area protegida.
-3. Na listagem (`contatos.php`):
+4. Na listagem (`contatos.php`):
    - buscar por nome/email
    - editar contato
    - excluir contato
@@ -77,15 +84,15 @@ As paginas abaixo exigem login:
 - `contatos.php`
 - `editar.php`
 
-Credenciais padrao:
-
-- usuario: `admin`
-- senha: `admin123`
-
-Para trocar credenciais sem editar codigo, configure variaveis de ambiente:
+Credenciais sao definidas por variaveis de ambiente no `.env`:
 
 - `APP_ADMIN_USER` (ex.: `gestor`)
 - `APP_ADMIN_PASS_HASH` (hash gerado com `password_hash`)
+
+Importante:
+
+- o arquivo `.env` nao deve ser enviado ao GitHub
+- o projeto ja possui `.gitignore` para bloquear `.env`
 
 ## Validacoes Implementadas
 
@@ -186,6 +193,15 @@ Exemplos:
 ```bash
 git config --global --add safe.directory C:/xampp/htdocs/formulario
 ```
+
+### Login desativado por falta de configuracao
+
+Se a tela de login mostrar que a autenticacao nao esta configurada:
+
+- confirme se existe o arquivo `.env` na raiz do projeto
+- confirme se ele possui:
+  - `APP_ADMIN_USER`
+  - `APP_ADMIN_PASS_HASH`
 
 ## Licenca
 

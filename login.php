@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!csrf_valido($token)) {
         $erro = 'Sessao invalida. Recarregue a pagina e tente novamente.';
+    } elseif (!auth_configurada()) {
+        $erro = 'Login desativado: configure APP_ADMIN_USER e APP_ADMIN_PASS_HASH no .env.';
     } elseif (auth_bloqueado()) {
         $erro = 'Muitas tentativas. Aguarde ' . auth_segundos_bloqueio_restante() . ' segundos.';
     } elseif ($usuario === '' || $senha === '') {
@@ -145,6 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #eef5ff;
             color: #1b4b91;
             font-size: 13px;
+            line-height: 1.5;
         }
     </style>
 </head>
@@ -175,7 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="credenciais">
-            Credenciais padrao: usuario <strong>admin</strong> e senha <strong>admin123</strong>.
+            Configure as credenciais no arquivo <strong>.env</strong>:<br>
+            APP_ADMIN_USER e APP_ADMIN_PASS_HASH.
         </div>
 
         <div class="links">
