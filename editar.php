@@ -1,5 +1,6 @@
 ﻿<?php
 require_once __DIR__ . '/seguranca.php';
+auth_exigir_login();
 
 $mensagem = '';
 $erro = '';
@@ -112,6 +113,27 @@ try {
             color: #222;
         }
 
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            font-size: 14px;
+            color: #444;
+        }
+
+        .topo a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .topo a:hover {
+            text-decoration: underline;
+        }
+
         label {
             display: block;
             margin-top: 12px;
@@ -185,6 +207,11 @@ try {
 <body>
     <div class="container">
         <h1>Editar Contato</h1>
+
+        <div class="topo">
+            <span>Usuario logado: <?= e(auth_nome_usuario()) ?></span>
+            <a href="logout.php">Sair</a>
+        </div>
 
         <?php if ($mensagem): ?>
             <div class="mensagem"><?= e($mensagem) ?></div>

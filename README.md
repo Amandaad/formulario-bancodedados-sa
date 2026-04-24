@@ -14,12 +14,16 @@ Este projeto permite:
 - buscar contatos por nome ou email
 - editar contatos
 - excluir contatos
+- autenticar acesso na area de contatos (login/logout)
 
 ## Estrutura do Projeto
 
 - `index.php`: formulario de cadastro
 - `contatos.php`: listagem com busca, editar e excluir
 - `editar.php`: tela de edicao de contato
+- `login.php`: login da area protegida
+- `logout.php`: encerra sessao do usuario logado
+- `seguranca.php`: CSRF, headers e autenticacao
 - `imags/`: pasta reservada para imagens do projeto
 
 ## Requisitos
@@ -59,10 +63,29 @@ Estrutura principal da tabela:
 
 1. Abrir `index.php` e cadastrar contato.
 2. Clicar em `Ver contatos salvos`.
+3. Fazer login na area protegida.
 3. Na listagem (`contatos.php`):
    - buscar por nome/email
    - editar contato
    - excluir contato
+
+## Autenticacao
+
+As paginas abaixo exigem login:
+
+- `index.php` (cadastro)
+- `contatos.php`
+- `editar.php`
+
+Credenciais padrao:
+
+- usuario: `admin`
+- senha: `admin123`
+
+Para trocar credenciais sem editar codigo, configure variaveis de ambiente:
+
+- `APP_ADMIN_USER` (ex.: `gestor`)
+- `APP_ADMIN_PASS_HASH` (hash gerado com `password_hash`)
 
 ## Validacoes Implementadas
 
@@ -73,7 +96,8 @@ Estrutura principal da tabela:
 
 ## Principais URLs
 
-- Cadastro: `http://localhost/formulario/`
+- Cadastro (protegido): `http://localhost/formulario/`
+- Login: `http://localhost/formulario/login.php`
 - Listagem: `http://localhost/formulario/contatos.php`
 - Edicao: `http://localhost/formulario/editar.php?id=1`
 
